@@ -1,11 +1,213 @@
-﻿@{
+﻿@model List<FixtureModel>;
+@{
     ViewData["Title"] = "Home Page";
+    ViewData["clCount"] = 0;
+    ViewData["plCount"] = 0;
+    ViewData["pdCount"] = 0;
 }
+<div class="container bg-light">
+    <div class="d-flex justify-content-around">
+        <a class="btn btn-warning btn-outline-dark" asp-controller="Home" asp-action="Index" asp-route-id="@ViewData["prevDate"]"> Prev day</a>
+        <button id="date-form-button" class="btn btn-outline-dark" onclick="changeDisplay()">@ViewData["date"]</button>
+        <form id="date-form" hidden>
+            <input type="date" name="date-now" />
+        </form>
+        <script>
+            function changeDisplay() {
+                if (document.getElementById('date-form').hidden == false) {
+                    document.getElementById('date-form').hidden = true;
+                    document.getElementById('date-form-button').hidden = false;
+                }
 
-<div class="container">
-    <div class="d-flex justify-content-between">
-        <a class="btn btn-danger" href="#"> Prev day</a>
-        <h3>Dec 2</h3>
-        <a class="btn btn-danger" href="#">Next day</a>
+                else {
+                    document.getElementById('date-form').hidden = false;
+                    document.getElementById('date-form-button').hidden = true;
+                }
+            }
+        </script>
+        <a class="btn btn-warning btn-outline-dark" asp-controller="Home" asp-action="Index" asp-route-id="@ViewData["nextDate"]">Next day</a>
     </div>
+
+    <div class="my-3">
+        <div class="card border-info">
+            <div class="card-header bg-primary text-white">
+                Champions League
+            </div>
+            <div class="card-body">
+                @foreach (var fixture in Model)
+                {
+                    if (fixture.competition == "CL")
+                    {
+                        ViewData["clCount"] = 1;
+                        <div class="row my-3">
+                            <div class="col-1"></div>
+                            <div class="col-4 text-center">
+                                <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
+                                <br />
+                                <span>@fixture.homeShort</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                @if (fixture.status.ToUpper() == "SCHEDULED")
+                                {
+                                    <span>@fixture.localTime.ToString("MM/dd")</span>
+                                    <br />
+                                    <span>Vs</span>
+                                    <br />
+                                    <span>@fixture.localTime.ToString("HH:mm tt")</span>
+                                }
+
+                                else if (fixture.status.ToUpper() == "FINISHED")
+                                {
+                                    <span>FINISHED</span>
+                                    <br />
+                                    <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                    <br />
+                                    <span>Full Time</span>
+                                }
+
+                                else
+                                {
+                                    <br />
+                                    <span>@fixture.status</span>
+                                    <br />
+                                }
+                            </div>
+                            <div class="col-4 text-center">
+                                <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
+                                <br />
+                                <span>@fixture.awayShort</span>
+                            </div>
+                            <div class="col-1"></div>
+                        </div>
+                    }
+                }
+
+                @if (ViewData["clCount"].ToString() == "0")
+                {
+                    <div class="text-center">No Match Today</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div id="PL card" class="my-3">
+        <div class="card border-info">
+            <div class="card-header bg-primary text-white">
+                Premier League
+            </div>
+            <div class="card-body">
+                @foreach (var fixture in Model)
+                {
+                    @if (fixture.competition == "PL")
+                    {
+                        ViewData["plCount"] = 1;
+                        <div class="row my-3">
+                            <div class="col-1"></div>
+                            <div class="col-4 text-center">
+                                <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
+                                <br />
+                                <span>@fixture.homeShort</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                @if (fixture.status.ToUpper() == "SCHEDULED")
+                                {
+                                    <span>@fixture.localTime.ToString("MM/dd")</span>
+                                    <br />
+                                    <span>Vs</span>
+                                    <br />
+                                    <span>@fixture.localTime.ToString("HH:mm tt")</span>
+                                }
+                                else if (fixture.status.ToUpper() == "FINISHED")
+                                {
+                                    <span>FINISHED</span>
+                                    <br />
+                                    <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                    <br />
+                                    <span>Full Time</span>
+                                }
+
+                                else
+                                {
+                                    <br />
+                                    <span>@fixture.status</span>
+                                    <br />
+                                }
+                            </div>
+                            <div class="col-4 text-center">
+                                <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
+                                <br />
+                                <span>@fixture.awayShort</span>
+                            </div>
+                            <div class="col-1"></div>
+                        </div>
+                    }
+                }
+
+                @if (ViewData["plCount"].ToString() == "0")
+                {
+                    <div class="text-center">No Match Today</div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="my-3">
+        <div class="card border-info">
+            <div class="card-header bg-primary text-white">
+                La Liga
+            </div>
+            <div class="card-body">
+                @foreach (var fixture in Model)
+                {
+                    @if (fixture.competition == "PD")
+                    {
+                        ViewData["pdCount"] = 1;
+                        <div class="row my-3">
+                            <div class="col-1"></div>
+                            <div class="col-4 text-center">
+                                <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
+                                <br />
+                                <span>@fixture.homeShort</span>
+                            </div>
+                            <div class="col-2 text-center">
+                                @if (fixture.status.ToUpper() == "SCHEDULED")
+                                {
+                                    <span>@fixture.localTime.ToString("MM/dd")</span>
+                                    <br />
+                                    <span>Vs</span>
+                                    <br />
+                                    <span>@fixture.localTime.ToString("HH:mm tt")</span>
+                                }
+                                else if (fixture.status.ToUpper() == "FINISHED")
+                                {
+                                    <span>FINISHED</span>
+                                    <br />
+                                    <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                    <br />
+                                    <span>Full Time</span>
+                                }
+
+                                else
+                                {
+                                    <br />
+                                    <span>@fixture.status</span>
+                                    <br />
+                                }
+                            </div>
+                            <div class="col-4 text-center">
+                                <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
+                                <br />
+                                <span>@fixture.awayShort</span>
+                            </div>
+                            <div class="col-1"></div>
+                        </div>
+                    }
+                }
+                @if (ViewData["pdCount"].ToString() == "0")
+                {
+                    <div class="text-center">No Match Today</div>
+                }
+            </div>
+        </div>
+    </div>
+
 </div>
