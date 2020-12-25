@@ -9,8 +9,11 @@
     <div class="d-flex justify-content-around">
         <a class="btn btn-warning btn-outline-dark" asp-controller="Home" asp-action="Index" asp-route-id="@ViewData["prevDate"]"> Prev day</a>
         <button id="date-form-button" class="btn btn-outline-dark" onclick="changeDisplay()">@ViewData["date"]</button>
-        <form id="date-form" hidden>
-            <input type="date" name="date-now" />
+        <form id="date-form" class="form-inline" hidden asp-controller="Home" asp-action="Index">
+            <div class="form-group">
+                <input class="form-control" type="date" name="dateto"/>
+                <input class="ml-1 form-control" type="submit" value="Go" />
+            </div>
         </form>
         <script>
             function changeDisplay() {

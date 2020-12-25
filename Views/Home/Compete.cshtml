@@ -1,0 +1,154 @@
+﻿@model CompetitionViewModel;
+
+@{
+    int x;
+
+}
+<div class="text-center">
+    <h1 class="display-3">@Model.matches.competition.name.ToUpper()</h1>
+    <ul class="nav nav-pills justify-content-center" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="pills-match-tab" data-toggle="pill" href="#match" role="tab" aria-controls="match" aria-selected="true">Matches</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="pills-table-tab" data-toggle="pill" href="#table" role="tab" aria-controls="table" aria-selected="false">Standing</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="pills-scorer-tab" data-toggle="pill" href="#scorer" role="tab" aria-controls="scorer" aria-selected="false">Top scorers</a>
+        </li>
+    </ul>
+</div>
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="match" role="tabpanel" aria-labelledby="pills-match-tab">
+        @foreach (var fixture in Model.matches.matches)
+        {
+            Team currentHomeTeam = Model.teams.teams.AsQueryable().Where(item => item.id == fixture.homeTeam.id).FirstOrDefault();
+            Team currentAwayTeam = Model.teams.teams.AsQueryable().Where(item => item.id == fixture.awayTeam.id).FirstOrDefault();
+            <div class="row my-3">
+                <div class="col-1"></div>
+                <div class="col-4 text-center">
+                    <img style="height:50px; width:auto;" alt=@currentHomeTeam.tla src=@currentHomeTeam.crestUrl />
+                    <br />
+                    <span>@currentHomeTeam.shortName</span>
+                </div>
+                <div class="col-2 text-center">
+                    @if (fixture.status.ToUpper() == "SCHEDULED")
+                    {
+                        <span>@fixture.utcDate.ToLocalTime().ToString("MM/dd")</span>
+                        <br />
+                        <span>Vs</span>
+                        <br />
+                        <span>@fixture.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+                    }
+
+                    else if (fixture.status.ToUpper() == "FINISHED")
+                    {
+                        <span>FINISHED</span>
+                        <br />
+                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                        <br />
+                        <span>Full Time</span>
+                    }
+
+                    else
+                    {
+                        <br />
+                        <span>@fixture.status</span>
+                        <br />
+                    }
+                </div>
+                <div class="col-4 text-center">
+                    <img style="height:50px; width:auto;" alt=@currentAwayTeam.tla src=@currentAwayTeam.crestUrl />
+                    <br />
+                    <span>@currentAwayTeam.shortName</span>
+                </div>
+                <div class="col-1"></div>
+
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade" id="table" role="tabpanel" aria-labelledby="pills-table-tab">
+        @foreach (var standing in Model.standings.standings)
+        {
+            if (standing.type == "TOTAL")
+            {
+                <div class="card bg-white border-dark my-4 mx-auto w-75">
+                    <table class="table">
+                        @if (standing.group != null)
+                        {
+                            <thead class="thead-light">
+                                <tr>
+                                    <th colspan="9" class="text-center">
+                                        @standing.group.Replace('_', ' ')
+                                    </th>
+                                </tr>
+                            </thead>
+                        }
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Pos</th>
+                                <th scope="col">Club</th>
+                                <th scope="col">W</th>
+                                <th scope="col">D</th>
+                                <th scope="col">L</th>
+                                <th scope="col">Pts</th>
+                                <th scope="col">GF</th>
+                                <th scope="col">GA</th>
+                                <th scope="col">GD</th>
+                            </tr>
+                        </thead>
+
+                        @{
+                            x = 1;
+                        }
+                        @foreach (var team in standing.table)
+                        {
+                            Team currentTeam = Model.teams.teams.AsQueryable().Where(item => team.team.id == item.id).FirstOrDefault();
+                            <tr>
+                                <td>@x</td>
+                                @{
+                                    x++;
+                                }
+                                <td><img class="d-inline mr-1" style="height:25px; width:auto;" alt="@currentTeam.tla" src="@currentTeam.crestUrl"/>@currentTeam.shortName</td>
+                                <td>@team.won</td>
+                                <td>@team.draw</td>
+                                <td>@team.lost</td>
+                                <td>@team.points</td>
+                                <td>@team.goalsFor</td>
+                                <td>@team.goalsAgainst</td>
+                                <td>@team.goalDifference</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            }
+        }
+    </div>
+    <div class="tab-pane fade my-4" id="scorer" role="tabpanel" aria-labelledby="pills-scorer-tab">
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Pos</th>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Goals</th>
+                </tr>
+            </thead>
+            @{ 
+                x = 1;
+            }
+            @foreach (var player in Model.scorer.scorers)
+            {
+                <tr>
+                    <td>@x</td>
+                    @{ 
+                        x++;
+                    }
+                    <td>@player.player.name</td>
+                    <td>@player.team.name</td>
+                    <td>@player.numberOfGoals</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>

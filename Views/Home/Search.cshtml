@@ -1,0 +1,50 @@
+﻿@model SearchViewModel;
+
+<h1>Well You Might have Searched for something eh???</h1>
+
+@foreach (var fixture in Model.searchMatches)
+{
+    Team currentHomeTeam = Model.allTeams.AsQueryable().Where(item => item.id == fixture.homeTeam.id).FirstOrDefault();
+    Team currentAwayTeam = Model.allTeams.AsQueryable().Where(item => item.id == fixture.awayTeam.id).FirstOrDefault();
+    <div class="row my-3">
+        <div class="col-1"></div>
+        <div class="col-4 text-center">
+            <img style="height:50px; width:auto;" alt=@currentHomeTeam.tla src=@currentHomeTeam.crestUrl />
+            <br />
+            <span>@currentHomeTeam.shortName</span>
+        </div>
+        <div class="col-2 text-center">
+            @if (fixture.status.ToUpper() == "SCHEDULED")
+            {
+                <span>@fixture.utcDate.ToLocalTime().ToString("MM/dd")</span>
+                <br />
+                <span>Vs</span>
+                <br />
+                <span>@fixture.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+            }
+
+            else if (fixture.status.ToUpper() == "FINISHED")
+            {
+                <span>FINISHED</span>
+                <br />
+                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                <br />
+                <span>Full Time</span>
+            }
+
+            else
+            {
+                <br />
+                <span>@fixture.status</span>
+                <br />
+            }
+        </div>
+        <div class="col-4 text-center">
+            <img style="height:50px; width:auto;" alt=@currentAwayTeam.tla src=@currentAwayTeam.crestUrl />
+            <br />
+            <span>@currentAwayTeam.shortName</span>
+        </div>
+        <div class="col-1"></div>
+
+    </div>
+}

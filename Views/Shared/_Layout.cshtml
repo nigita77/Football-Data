@@ -28,13 +28,14 @@
                                 Competitions
                             </a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Link 1</a>
-                                <a class="dropdown-item" href="#">Link 2</a>
+                                <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Compete" asp-route-id="CL">UEFA Champions League</a>
+                                <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Compete" asp-route-id="PL">Premier League</a>
+                                <a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Compete" asp-route-id="PD">La Liga</a>
                             </div>
                         </li>
                     </ul>
-                    <form class="form-inline" action="/action_page.php">
-                        <input class="form-control mr-sm-2" type="text" placeholder="Search">
+                    <form class="form-inline" asp-controller="Home" asp-action="Search">
+                        <input class="form-control mr-sm-2" type="text" placeholder="Search" name="searchString" autocomplete="off">
                         <button class="btn btn-primary" type="submit">Search</button>
                     </form>
                     <span class="nav-item">

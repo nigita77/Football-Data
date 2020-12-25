@@ -8,12 +8,16 @@ using Microsoft.Extensions.Logging;
 using Project01.Models;
 using System.Net.Http;
 using Newtonsoft.Json;
+using System.Globalization;
+using System.Threading;
 
 namespace Project01.Controllers
 {
     public class HomeController : Controller
     {
-        private const string Value = "5f0f87aa7a314f9db4722f38c156d3d3";
+        private const string Value1 = "5f0f87aa7a314f9db4722f38c156d3d3";
+        private const string Value2 = "1894fa46cc8b4324a512d5d45e6960a4";
+        private const string API = "https://api.football-data.org/";
         private readonly ILogger<HomeController> _logger;
         public HomeController(ILogger<HomeController> logger)
         {
@@ -28,57 +32,127 @@ namespace Project01.Controllers
         static TeamsModel plTeams;
         static TeamsModel pdTeams;
 
-        private async void apiCall()
+        static StandingsModel clStanding;
+        static StandingsModel plStanding;
+        static StandingsModel pdStanding;
+
+        static ScorerModel clScorers;
+        static ScorerModel plScorers;
+        static ScorerModel pdScorers;
+
+        private static HttpClient httpClient = new HttpClient();
+
+        private async Task<bool> apiCall()
         {
-            apiCalled = true;
-            using (var httpClient = new HttpClient())
-            {
-                httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value);
-                UriBuilder uri = new UriBuilder("https://api.football-data.org/");
-                uri.Path = "v2/competitions/CL/matches";
-                using (HttpResponseMessage response = await httpClient.GetAsync(uri.ToString()))
-                {
-                    string apiResopnse = await response.Content.ReadAsStringAsync();
-                    clMatches = JsonConvert.DeserializeObject<MatchesModel>(apiResopnse);
-                }
+            string[] matchPaths = { "v2/competitions/CL/matches" , "v2/competitions/PL/matches", "v2/competitions/PD/matches" };
+            string[] teamPaths = { "v2/competitions/CL/teams", "v2/competitions/PL/teams", "v2/competitions/PD/teams" };
+            string[] standingPaths = { "v2/competitions/CL/standings", "v2/competitions/PL/standings", "v2/competitions/PD/standings" };
+            string[] scorerPaths = { "v2/competitions/CL/scorers", "v2/competitions/PL/scorers", "v2/competitions/PD/scorers" };
 
-                uri.Path = "v2/competitions/PL/matches";
-                using (HttpResponseMessage response = await httpClient.GetAsync(uri.ToString()))
-                {
-                    string apiResopnse = await response.Content.ReadAsStringAsync();
-                    plMatches = JsonConvert.DeserializeObject<MatchesModel>(apiResopnse);
-                }
+            IEnumerable<MatchesModel> matches = await ApiMatchModelAsync(matchPaths);
+            IEnumerable<TeamsModel> teams = await ApiTeamModelAsync(teamPaths);
+            IEnumerable<StandingsModel> standings = await ApiStandingModelAsync(standingPaths);
+            IEnumerable<ScorerModel> scorers = await ApiScorerModelAsync(scorerPaths);
 
-                uri.Path = "v2/competitions/PD/matches";
-                using (HttpResponseMessage response = await httpClient.GetAsync(uri.ToString()))
-                {
-                    string apiResopnse = await response.Content.ReadAsStringAsync();
-                    pdMatches = JsonConvert.DeserializeObject<MatchesModel>(apiResopnse);
-                }
+            clMatches = matches.Where(match => match.competition.id == 2001).FirstOrDefault();
+            plMatches = matches.Where(match => match.competition.id == 2021).FirstOrDefault();
+            pdMatches = matches.Where(match => match.competition.id == 2014).FirstOrDefault();
 
-                uri.Path = "v2/competitions/CL/teams";
-                using (HttpResponseMessage response = await httpClient.GetAsync(uri.ToString()))
-                {
-                    string apiResopnse = await response.Content.ReadAsStringAsync();
-                    clTeams = JsonConvert.DeserializeObject<TeamsModel>(apiResopnse);
-                }
+            clTeams = teams.Where(team => team.competition.id == 2001).FirstOrDefault();
+            plTeams = teams.Where(team => team.competition.id == 2021).FirstOrDefault();
+            pdTeams = teams.Where(team => team.competition.id == 2014).FirstOrDefault();
 
-                uri.Path = "v2/competitions/PL/teams";
-                using (HttpResponseMessage response = await httpClient.GetAsync(uri.ToString()))
-                {
-                    string apiResopnse = await response.Content.ReadAsStringAsync();
-                    plTeams = JsonConvert.DeserializeObject<TeamsModel>(apiResopnse);
-                }
+            clStanding = standings.Where(standing => standing.competition.id == 2001).FirstOrDefault();
+            plStanding = standings.Where(standing => standing.competition.id == 2021).FirstOrDefault();
+            pdStanding = standings.Where(standing => standing.competition.id == 2014).FirstOrDefault();
 
-                uri.Path = "v2/competitions/PD/teams";
-                using (HttpResponseMessage response = await httpClient.GetAsync(uri.ToString()))
-                {
-                    string apiResopnse = await response.Content.ReadAsStringAsync();
-                    pdTeams = JsonConvert.DeserializeObject<TeamsModel>(apiResopnse);
-                }
-            }
+            clScorers = scorers.Where(scorer => scorer.competition.id == 2001).FirstOrDefault();
+            plScorers = scorers.Where(scorer => scorer.competition.id == 2021).FirstOrDefault();
+            pdScorers = scorers.Where(scorer => scorer.competition.id == 2014).FirstOrDefault();
+
+            return true;
         }
-        public IActionResult Index(DateTime? id)
+
+        private async Task<IEnumerable<MatchesModel>> ApiMatchModelAsync(string [] uris)
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value1);
+            for (int i = 0; i < uris.Length; i++) { uris[i] = API + uris[i]; }
+            var request = uris.Select(url => httpClient.GetAsync(url)).ToList();
+
+            await Task.WhenAll(request);
+
+            var responses = request.Select(task => task.Result);
+
+            List<MatchesModel> responseModels = new List<MatchesModel>();
+            foreach (var r in responses)
+            {
+                var s = await r.Content.ReadAsStringAsync();
+                responseModels.Add(JsonConvert.DeserializeObject<MatchesModel>(s));
+            }
+            httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
+            return responseModels;
+        }
+
+        private async Task<IEnumerable<TeamsModel>> ApiTeamModelAsync(string[] uris)
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value1);
+            for (int i = 0; i < uris.Length; i++) { uris[i] = API + uris[i]; }
+            var request = uris.Select(url => httpClient.GetAsync(url)).ToList();
+
+            await Task.WhenAll(request);
+
+            var responses = request.Select(task => task.Result);
+
+            List<TeamsModel> responseModels = new List<TeamsModel>();
+            foreach (var r in responses)
+            {
+                var s = await r.Content.ReadAsStringAsync();
+                responseModels.Add(JsonConvert.DeserializeObject<TeamsModel>(s));
+            }
+            httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
+            return responseModels;
+        }
+
+        private async Task<IEnumerable<StandingsModel>> ApiStandingModelAsync(string[] uris)
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value1);
+            for (int i = 0; i < uris.Length; i++) { uris[i] = API + uris[i]; }
+            var request = uris.Select(url => httpClient.GetAsync(url)).ToList();
+
+            await Task.WhenAll(request);
+
+            var responses = request.Select(task => task.Result);
+
+            List<StandingsModel> responseModels = new List<StandingsModel>();
+            foreach (var r in responses)
+            {
+                var s = await r.Content.ReadAsStringAsync();
+                responseModels.Add(JsonConvert.DeserializeObject<StandingsModel>(s));
+            }
+            httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
+            return responseModels;
+        }
+
+        private async Task<IEnumerable<ScorerModel>> ApiScorerModelAsync(string[] uris)
+        {
+            httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value2);
+            for (int i = 0; i < uris.Length; i++) { uris[i] = API + uris[i]; }
+            var request = uris.Select(url => httpClient.GetAsync(url)).ToList();
+
+            await Task.WhenAll(request);
+
+            var responses = request.Select(task => task.Result);
+
+            List<ScorerModel> responseModels = new List<ScorerModel>();
+            foreach (var r in responses)
+            {
+                var s = await r.Content.ReadAsStringAsync();
+                responseModels.Add(JsonConvert.DeserializeObject<ScorerModel>(s));
+            }
+            httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
+            return responseModels;
+        }
+        public async Task<IActionResult> Index(DateTime? id)
         {
             DateTime temp;
             if (id == null)
@@ -91,7 +165,7 @@ namespace Project01.Controllers
             }
             if (apiCalled == false)
             {
-                apiCall();
+                apiCalled = await apiCall();
             }
             ViewData["date"] = temp.Date.ToString("MMM dd");
             ViewData["nextDate"] = temp.AddDays(1).ToString("yyyy-MM-dd");
@@ -185,6 +259,71 @@ namespace Project01.Controllers
                 fixtures1.Add(fixture);
             }
             return View(fixtures1);
+        }
+
+        [HttpPost]
+        public IActionResult Index(DateTime dateto, bool isBool)
+        {
+            return RedirectToAction(nameof(Index), "Home", new { id = dateto.ToString("yyyy-MM-dd") });
+        }
+
+        public async Task<IActionResult> Compete(string id)
+        {
+            if (apiCalled == false)
+            {
+                apiCalled = await apiCall();
+            }
+
+            CompetitionViewModel com = new CompetitionViewModel(); 
+            if (id == "CL")
+            {
+                com.matches = clMatches;
+                com.teams = clTeams;
+                com.standings = clStanding;
+                com.scorer = clScorers;
+                return View(com);
+            }
+
+            else if (id == "PL")
+            {
+                com.matches = plMatches;
+                com.teams = plTeams;
+                com.standings = plStanding;
+                com.scorer = plScorers;
+                return View(com);
+            }
+
+            else if (id == "PD")
+            {
+                com.matches = pdMatches;
+                com.teams = pdTeams;
+                com.standings = pdStanding;
+                com.scorer = pdScorers;
+                return View(com);
+            }
+            else
+            {
+                return View();
+            }
+        }
+
+        public IActionResult Search (string searchString)
+        {
+            SearchViewModel search = new SearchViewModel();
+            StringComparison compare = StringComparison.CurrentCultureIgnoreCase;
+            CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
+            search.searchMatches.AddRange(clMatches.matches.Where(x => x.homeTeam.name.Contains(searchString, compare) || x.awayTeam.name.Contains(searchString,compare))); // Angel
+            search.searchMatches.AddRange(plMatches.matches.Where(x => x.homeTeam.name.Contains(searchString, compare) || x.awayTeam.name.Contains(searchString, compare)));
+            search.searchMatches.AddRange(pdMatches.matches.Where(x => x.homeTeam.name.Contains(searchString, compare) || x.awayTeam.name.Contains(searchString, compare)));
+
+            search.searchTeams.AddRange(clTeams.teams.Where(x => x.name.Contains(searchString, compare)));
+            search.searchTeams.AddRange(plTeams.teams.Where(x => x.name.Contains(searchString, compare)));
+            search.searchTeams.AddRange(pdTeams.teams.Where(x => x.name.Contains(searchString, compare)));
+
+            search.allTeams.AddRange(clTeams.teams);
+            search.allTeams.AddRange(plTeams.teams);
+            search.allTeams.AddRange(pdTeams.teams);
+            return View(search);
         }
         public IActionResult Privacy()
         {
