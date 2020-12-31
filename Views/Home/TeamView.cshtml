@@ -1,0 +1,182 @@
+﻿@model TeamViewModel;
+
+<div class="text-center">
+    <div class="row">
+        <div class="col-2">
+            <img style="height:auto; max-width:100%;" alt="@Model.team.tla" src="@Model.team.crestUrl" />
+        </div>
+        <div class="col-10">
+            <div class="row">
+                <h1 class="display-2 text-center">@Model.team.name</h1>
+            </div>
+            <div class="row">
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Short Name</span>
+                    <br />
+                    <span>@Model.team.shortName</span>
+                </div>
+                <div class="col-4 border">
+                    <span class="font-weight-bold">TLA name</span>
+                    <br />
+                    <span>@Model.team.tla</span>
+                </div>
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Founded Date</span>
+                    <br />
+                    <span>@Model.team.founded</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Stadium</span>
+                    <br />
+                    <span>@Model.team.venue</span>
+                </div>
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Club Colors</span>
+                    <br />
+                    <span>@Model.team.clubColors</span>
+                </div>
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Based On</span>
+                    <br />
+                    <span>@Model.team.area.name</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Address</span>
+                    <br />
+                    <span>@Model.team.address</span>
+                </div>
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Website</span>
+                    <br />
+                    <span><a href="@Model.team.website">@Model.team.website</a></span>
+                </div>
+                <div class="col-4 border">
+                    <span class="font-weight-bold">Phone</span>
+                    <br />
+                    <span>@Model.team.phone</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ul class="nav nav-pills my-1 justify-content-center" id="pills-tab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="pills-match-tab" data-toggle="pill" href="#pills-match" role="tab" aria-controls="pills-match" aria-selected="true">Matches</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="pills-squad-tab" data-toggle="pill" href="#pills-squad" role="tab" aria-controls="pills-squad" aria-selected="false">Squad</a>
+        </li>
+    </ul>
+</div>
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active border" id="pills-match" role="tabpanel" aria-labelledby="pills-match-tab">
+        <div class="card-header bg-dark text-center">
+            <span class="text-light">Upcomming Matches of @Model.team.name</span>
+        </div>
+        <div>
+            @foreach (var fixture in Model.matches)
+            {
+                Team currentHomeTeam = Model.allTeams.AsQueryable().Where(item => item.id == fixture.homeTeam.id).FirstOrDefault();
+                Team currentAwayTeam = Model.allTeams.AsQueryable().Where(item => item.id == fixture.awayTeam.id).FirstOrDefault();
+                <div class="row no-gutters my-3 p-3 rounded border-bottom w-75 mx-auto">
+                    <div class="col-1"></div>
+                    <div class="col-4 text-center">
+                        <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentHomeTeam.id">
+                            <img style="height:50px; width:auto;" alt=@currentHomeTeam.tla src=@currentHomeTeam.crestUrl />
+                            <br />
+                            <span class="text-dark">@currentHomeTeam.shortName</span>
+                        </a>
+                    </div>
+
+                    <div class="col-2 text-center">
+                        <a class="text-dark" asp-controller="Home" asp-action="MatchDetail" asp-route-matchId="@fixture.id">
+                            @if (fixture.status.ToUpper() == "SCHEDULED")
+                            {
+                                <span>@fixture.utcDate.ToLocalTime().ToString("MM/dd")</span>
+                                <br />
+                                <span>Vs</span>
+                                <br />
+                                <span>@fixture.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+                            }
+
+                            else if (fixture.status.ToUpper() == "FINISHED")
+                            {
+                                <span>FINISHED</span>
+                                <br />
+                                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                <br />
+                                <span>Full Time</span>
+
+                            }
+
+                            else if (fixture.status.ToUpper() == "IN_PLAY")
+                            {
+                                <span>Live</span>
+                                <br />
+                                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                <br />
+                            }
+
+                            else if (fixture.status.ToUpper() == "PAUSED")
+                            {
+                                <span>Half Time</span>
+                                <br />
+                                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                            }
+
+
+                            else
+                            {
+                                <br />
+                                <span>@fixture.status</span>
+                                <br />
+                            }
+                        </a>
+                    </div>
+                    <div class="col-4 text-center">
+                        <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentAwayTeam.id">
+                            <img style="height:50px; width:auto;" alt=@currentAwayTeam.tla src=@currentAwayTeam.crestUrl />
+                            <br />
+                            <span class="text-dark">@currentAwayTeam.shortName</span>
+                        </a>
+                    </div>
+                    <div class="col-1"></div>
+
+                </div>
+            }
+        </div>
+    </div>
+    <div class="tab-pane fade" id="pills-squad" role="tabpanel" aria-labelledby="pills-squad-tab">
+        <div class="card-header text-center bg-dark">
+            <span class="text-light">Current Squad</span>
+        </div>
+
+        <div class="row no-gutters">
+            @foreach (var player in Model.team.squad)
+            {
+                <div class="card my-3 w-25 p-3 col-6 text-center">
+                    <div class="row no-gutters">
+                        <span class="font-weight-bold col-4">Name</span><span class="col">@player.name</span>
+                    </div>
+                    <div class="row no-gutters">
+                        <span class="font-weight-bold col-4">Position</span><span class="col">@player.position</span>
+                    </div>
+                    <div class="row no-gutters">
+                        <span class="font-weight-bold col-4">DOB</span><span class="col">@player.dateOfBirth.ToString("yyyy-MM-dd")</span>
+                    </div>
+                    <div class="row no-gutters">
+                        <span class="font-weight-bold col-4">Nationality</span><span class="col">@player.nationality</span>
+                    </div>
+                    <div class="row no-gutters">
+                        <span class="font-weight-bold col-4">Role</span><span class="col">@player.role</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+

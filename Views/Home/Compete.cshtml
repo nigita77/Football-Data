@@ -2,6 +2,7 @@
 
 @{
     int x;
+    string id;
 
 }
 <div class="text-center">
@@ -18,67 +19,129 @@
         </li>
     </ul>
 </div>
+
+
+
 <div class="tab-content" id="pills-tabContent">
     <div class="tab-pane fade show active" id="match" role="tabpanel" aria-labelledby="pills-match-tab">
-        @foreach (var fixture in Model.matches.matches)
-        {
-            Team currentHomeTeam = Model.teams.teams.AsQueryable().Where(item => item.id == fixture.homeTeam.id).FirstOrDefault();
-            Team currentAwayTeam = Model.teams.teams.AsQueryable().Where(item => item.id == fixture.awayTeam.id).FirstOrDefault();
-            <div class="row my-3">
-                <div class="col-1"></div>
-                <div class="col-4 text-center">
-                    <img style="height:50px; width:auto;" alt=@currentHomeTeam.tla src=@currentHomeTeam.crestUrl />
-                    <br />
-                    <span>@currentHomeTeam.shortName</span>
-                </div>
-                <div class="col-2 text-center">
-                    @if (fixture.status.ToUpper() == "SCHEDULED")
+        <div class="text-center form-group">
+            <h3 class="display-4">Select MatchDay</h3>
+            <select id="stages" class="custom-select" style="width:200px" oninput="toggle('stages')">
+                <option selected>Choose Matchday</option>
+            </select>
+        </div>
+        
+        <div class="card rounded border-right border-left my-3" id="parentOfAll">
+            @foreach (var stage in Model.matches.matches.GroupBy(x => x.stage))
+            {
+                <div class="mb-2 status" id="@stage.Key">
+                    <div class="text-center card-header">@stage.Key.Replace('_', ' ')</div>
+                    @foreach (var matchdays in stage.GroupBy(x => x.matchday))
                     {
-                        <span>@fixture.utcDate.ToLocalTime().ToString("MM/dd")</span>
-                        <br />
-                        <span>Vs</span>
-                        <br />
-                        <span>@fixture.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
-                    }
+                        if (matchdays.Key != null)
+                        {
+                            id = "Match" + matchdays.Key;
+                        }
+                        else
+                        {
+                            id = stage.Key.Replace('_', ' ');
+                        }
+                        <div class="matchdays rounded border-left border-right w-75 mx-auto" id="@id">
+                            @if (matchdays.Key != null)
+                            {
+                                <div style="height:50px" class="text-center text-white bg-dark py-2">
+                                    <span class="my-auto">Matchday @matchdays.Key</span>
+                                </div>
+                            }
+                            @foreach (var fixture in matchdays)
+                            {
+                                Team currentHomeTeam = Model.teams.teams.AsQueryable().Where(item => item.id == fixture.homeTeam.id).FirstOrDefault();
+                                Team currentAwayTeam = Model.teams.teams.AsQueryable().Where(item => item.id == fixture.awayTeam.id).FirstOrDefault();
+                                <div class="row no-gutters my-3 p-3 rounded border-bottom">
+                                    <div class="col-1"></div>
+                                    <div class="col-4 text-center">
+                                        <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentHomeTeam.id">
+                                            <img style="height:50px; width:auto;" alt=@currentHomeTeam.tla src=@currentHomeTeam.crestUrl />
+                                            <br />
+                                            <span class="text-dark">@currentHomeTeam.shortName</span>
+                                        </a>
+                                    </div>
 
-                    else if (fixture.status.ToUpper() == "FINISHED")
-                    {
-                        <span>FINISHED</span>
-                        <br />
-                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
-                        <br />
-                        <span>Full Time</span>
-                    }
+                                    <div id="@id" class="col-2 text-center">
+                                        <a class="text-dark" asp-controller="Home" asp-action="MatchDetail" asp-route-matchId="@fixture.id">
+                                            @if (fixture.status.ToUpper() == "SCHEDULED")
+                                            {
+                                                <span>@fixture.utcDate.ToLocalTime().ToString("MM/dd")</span>
+                                                <br />
+                                                <span>Vs</span>
+                                                <br />
+                                                <span>@fixture.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+                                            }
 
-                    else
-                    {
-                        <br />
-                        <span>@fixture.status</span>
-                        <br />
+                                            else if (fixture.status.ToUpper() == "FINISHED")
+                                            {
+                                                <span>FINISHED</span>
+                                                <br />
+                                                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                                <br />
+                                                <span>Full Time</span>
+
+                                            }
+
+                                            else if (fixture.status.ToUpper() == "IN_PLAY")
+                                            {
+                                                <span>Live</span>
+                                                <br />
+                                                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                                <br />
+                                            }
+
+                                            else if (fixture.status.ToUpper() == "PAUSED")
+                                            {
+                                                <span>Half Time</span>
+                                                <br />
+                                                <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                            }
+
+
+                                            else
+                                            {
+                                                <br />
+                                                <span>@fixture.status</span>
+                                                <br />
+                                            }
+                                        </a>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentAwayTeam.id">
+                                            <img style="height:50px; width:auto;" alt=@currentAwayTeam.tla src=@currentAwayTeam.crestUrl />
+                                            <br />
+                                            <span class="text-dark">@currentAwayTeam.shortName</span>
+                                        </a>
+                                    </div>
+                                    <div class="col-1"></div>
+
+                                </div>
+                            }
+                        </div>
                     }
                 </div>
-                <div class="col-4 text-center">
-                    <img style="height:50px; width:auto;" alt=@currentAwayTeam.tla src=@currentAwayTeam.crestUrl />
-                    <br />
-                    <span>@currentAwayTeam.shortName</span>
-                </div>
-                <div class="col-1"></div>
 
-            </div>
-        }
+            }
+        </div>
     </div>
     <div class="tab-pane fade" id="table" role="tabpanel" aria-labelledby="pills-table-tab">
         @foreach (var standing in Model.standings.standings)
         {
             if (standing.type == "TOTAL")
             {
-                <div class="card bg-white border-dark my-4 mx-auto w-75">
-                    <table class="table">
+                <div class="card bg-white my-4 mx-auto w-75">
+                    <table class="table border border-dark">
                         @if (standing.group != null)
                         {
                             <thead class="thead-light">
                                 <tr>
-                                    <th colspan="9" class="text-center">
+                                    <th colspan="10" class="text-center">
                                         @standing.group.Replace('_', ' ')
                                     </th>
                                 </tr>
@@ -88,6 +151,7 @@
                             <tr>
                                 <th scope="col">Pos</th>
                                 <th scope="col">Club</th>
+                                <th scope="col">MP</th>
                                 <th scope="col">W</th>
                                 <th scope="col">D</th>
                                 <th scope="col">L</th>
@@ -109,7 +173,13 @@
                                 @{
                                     x++;
                                 }
-                                <td><img class="d-inline mr-1" style="height:25px; width:auto;" alt="@currentTeam.tla" src="@currentTeam.crestUrl"/>@currentTeam.shortName</td>
+                                <td>
+                                    <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentTeam.id" asp-route-compId="@Model.teams.competition.id">
+                                        <img class="d-inline mr-1" style="height:25px; width:auto;" alt="@currentTeam.tla" src="@currentTeam.crestUrl"/>
+                                        <span class="text-dark">@currentTeam.shortName</span>
+                                    </a>
+                                </td>
+                                <td>@team.playedGames</td>
                                 <td>@team.won</td>
                                 <td>@team.draw</td>
                                 <td>@team.lost</td>
@@ -152,3 +222,79 @@
         </table>
     </div>
 </div>
+
+<script>
+    var matchDay = @Json.Serialize(Model.matches.matches[0].season.currentMatchday);
+    var optionGroup = @Json.Serialize(Model.matches.matches.GroupBy(x=>x.stage).Select(x => x.Key.Replace('_', ' ')).ToList());
+    var options = @Json.Serialize(Model.matches.matches.GroupBy(x => x.stage).Select(x => x.GroupBy(x => x.matchday).Select(x=>x.Key)).ToList());
+    var select = document.getElementById("stages");
+    var select1 = document.getElementById("matchdays");
+    for (var i = 0; i < optionGroup.length; i++) {
+        var optgr = document.createElement("optgroup");
+        optgr.label = optionGroup[i];
+        select.appendChild(optgr)
+        for (var j = 0; j < options[i].length; j++) {
+
+            var option = document.createElement("option");
+            if (options[i][j] != null) {
+                option.value = "Match"+options[i][j];
+                option.text = "Matchday "+options[i][j];
+            }
+
+            else {
+                option.value = optionGroup[i];
+                option.text = optionGroup[i];
+            }
+            optgr.appendChild(option);
+        }
+        var temp = document.getElementById("parentOfAll");
+
+        function atFirst() {
+            var firstChilds = temp.childNodes;
+            var status = document.getElementsByClassName("status");
+            var matchdays = document.getElementsByClassName("matchdays");
+
+            for (var i = 0; i < status.length; i++) {
+                status[i].style.display = "none";
+            }
+
+            for (var i = 0; i < matchdays.length; i++) {
+                matchdays[i].style.display = "none";
+            }
+            for (var i = 0; i < firstChilds.length; i++) {
+                var secondChilds = firstChilds[i].childNodes
+                for (var j = 0; j < secondChilds.length; j++) {
+                    if (secondChilds[j].id == "Match" + matchDay) {
+                        firstChilds[i].style.display = "block";
+                        secondChilds[j].style.display = "block";
+                    }
+                }
+            }
+        }
+        function toggle(id) {
+            var value = document.getElementById(id).value;
+            var firstChilds = temp.childNodes;
+            var status = document.getElementsByClassName("status");
+            var matchdays = document.getElementsByClassName("matchdays");
+
+            for (var i = 0; i < status.length; i++) {
+                status[i].style.display = "none";
+            }
+
+            for (var i = 0; i < matchdays.length; i++) {
+                matchdays[i].style.display = "none";
+            }
+            for (var i = 0; i < firstChilds.length; i++) {
+                var secondChilds = firstChilds[i].childNodes
+                for (var j = 0; j < secondChilds.length; j++) {
+                    if (secondChilds[j].id == value) {
+                        firstChilds[i].style.display = "block";
+                        secondChilds[j].style.display = "block";
+                    }
+                }
+            }
+        }
+    }
+
+    atFirst();
+</script>

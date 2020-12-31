@@ -1,0 +1,63 @@
+﻿@model MatchDetailModel
+<h1>Match Detail</h1>
+
+<div>
+    @{
+        Team currentHomeTeam = Model.teams.Where(x => x.id == Model.matchDetail.match.homeTeam.id).FirstOrDefault();
+        Team currentAwayTeam = Model.teams.Where(x => x.id == Model.matchDetail.match.awayTeam.id).FirstOrDefault();
+     }
+    <div class="row no-gutters my-3 p-3 rounded border-bottom">
+        <div class="col-1"></div>
+        <div class="col-4 text-center">
+            <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentHomeTeam.id">
+                <img style="height:50px; width:auto;" alt=@currentHomeTeam.tla src=@currentHomeTeam.crestUrl />
+                <br />
+                <span class="text-dark">@currentHomeTeam.shortName</span>
+            </a>
+        </div>
+
+        <div class="col-2 text-center">
+                @if (Model.matchDetail.match.status.ToUpper() == "SCHEDULED")
+                {
+                    <span>@Model.matchDetail.match.utcDate.ToLocalTime().ToString("MM/dd")</span>
+                    <br />
+                    <span>Vs</span>
+                    <br />
+                    <span>@Model.matchDetail.match.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+                }
+
+                else if (Model.matchDetail.match.status.ToUpper() == "FINISHED")
+                {
+                    <span>FINISHED</span>
+                    <br />
+                    <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+                    <br />
+                    <span>Full Time</span>
+
+                }
+
+                else if (Model.matchDetail.match.status.ToUpper() == "IN_PLAY")
+                {
+                    <span>Live</span>
+                    <br />
+                    <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+                    <br />
+                }
+
+                else if (Model.matchDetail.match.status.ToUpper() == "PAUSED")
+                {
+                    <span>Half Time</span>
+                    <br />
+                    <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+                }
+
+
+                else
+                {
+                    <br />
+                    <span>@Model.matchDetail.match.status</span>
+                    <br />
+                }
+        </div>
+    </div>
+</div>

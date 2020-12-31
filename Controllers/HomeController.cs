@@ -10,6 +10,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using System.Globalization;
 using System.Threading;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Project01.Controllers
 {
@@ -40,6 +41,8 @@ namespace Project01.Controllers
         static ScorerModel plScorers;
         static ScorerModel pdScorers;
 
+        static List<Team> allTeams = new List<Team>();
+        static List<Match> allMatch = new List<Match>();
         private static HttpClient httpClient = new HttpClient();
 
         private async Task<bool> apiCall()
@@ -53,14 +56,22 @@ namespace Project01.Controllers
             IEnumerable<TeamsModel> teams = await ApiTeamModelAsync(teamPaths);
             IEnumerable<StandingsModel> standings = await ApiStandingModelAsync(standingPaths);
             IEnumerable<ScorerModel> scorers = await ApiScorerModelAsync(scorerPaths);
-
+            
             clMatches = matches.Where(match => match.competition.id == 2001).FirstOrDefault();
             plMatches = matches.Where(match => match.competition.id == 2021).FirstOrDefault();
             pdMatches = matches.Where(match => match.competition.id == 2014).FirstOrDefault();
 
+            allMatch.AddRange(clMatches.matches);
+            allMatch.AddRange(plMatches.matches);
+            allMatch.AddRange(pdMatches.matches);
+            
             clTeams = teams.Where(team => team.competition.id == 2001).FirstOrDefault();
             plTeams = teams.Where(team => team.competition.id == 2021).FirstOrDefault();
             pdTeams = teams.Where(team => team.competition.id == 2014).FirstOrDefault();
+
+            allTeams.AddRange(clTeams.teams);
+            allTeams.AddRange(plTeams.teams);
+            allTeams.AddRange(pdTeams.teams);
 
             clStanding = standings.Where(standing => standing.competition.id == 2001).FirstOrDefault();
             plStanding = standings.Where(standing => standing.competition.id == 2021).FirstOrDefault();
@@ -312,18 +323,59 @@ namespace Project01.Controllers
             SearchViewModel search = new SearchViewModel();
             StringComparison compare = StringComparison.CurrentCultureIgnoreCase;
             CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
-            search.searchMatches.AddRange(clMatches.matches.Where(x => x.homeTeam.name.Contains(searchString, compare) || x.awayTeam.name.Contains(searchString,compare))); // Angel
-            search.searchMatches.AddRange(plMatches.matches.Where(x => x.homeTeam.name.Contains(searchString, compare) || x.awayTeam.name.Contains(searchString, compare)));
-            search.searchMatches.AddRange(pdMatches.matches.Where(x => x.homeTeam.name.Contains(searchString, compare) || x.awayTeam.name.Contains(searchString, compare)));
+            MatchComparer matchComparer = new MatchComparer();
+            List<string> substrings;
+            substrings = searchString.Split(" ").ToList();
+            substrings.Add(searchString);
 
-            search.searchTeams.AddRange(clTeams.teams.Where(x => x.name.Contains(searchString, compare)));
-            search.searchTeams.AddRange(plTeams.teams.Where(x => x.name.Contains(searchString, compare)));
-            search.searchTeams.AddRange(pdTeams.teams.Where(x => x.name.Contains(searchString, compare)));
+            foreach (var str in substrings)
+            {
+                search.searchMatches.AddRange(allMatch.Where(x => x.homeTeam.name.Contains(str, compare) || x.awayTeam.name.Contains(str, compare)));
+                search.searchTeams.AddRange(allTeams.Where(x => x.name.Contains(str, compare)));
+            }
 
-            search.allTeams.AddRange(clTeams.teams);
-            search.allTeams.AddRange(plTeams.teams);
-            search.allTeams.AddRange(pdTeams.teams);
+            search.allTeams.AddRange(allTeams);
+            search.searchMatches = search.searchMatches.Distinct(matchComparer).ToList();
+            search.searchTeams = search.searchTeams.Distinct().ToList();
+
             return View(search);
+        }
+
+        public async Task<IActionResult> TeamView(int teamId)
+        {
+            TeamViewModel teamView = new TeamViewModel();
+            httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value2);
+            using (var response = await httpClient.GetAsync(API + "v2/teams/" + teamId.ToString()))
+            {
+                var apiCall = await response.Content.ReadAsStringAsync();
+                teamView.team = JsonConvert.DeserializeObject<Team>(apiCall);
+            }
+
+            using (var response = await httpClient.GetAsync(API + "v2/teams/" + teamId.ToString()+"/matches?status=SCHEDULED"))
+            {
+                var apiCall = await response.Content.ReadAsStringAsync();
+                teamView.matches = JsonConvert.DeserializeObject<MatchesModel>(apiCall).matches;
+            }
+            httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
+            teamView.allTeams = allTeams;
+            return View(teamView);
+        }
+
+        public async Task<IActionResult> MatchDetail (int matchId)
+        {
+            MatchDetail currMatch;
+            httpClient.DefaultRequestHeaders.Add("X-Auth-Token", Value2);
+            using (var response = await httpClient.GetAsync(API + "v2/matches/" + matchId.ToString()))
+            {
+                var apiCall = await response.Content.ReadAsStringAsync();
+                currMatch = JsonConvert.DeserializeObject<MatchDetail>(apiCall);
+            }
+
+            MatchDetailModel mDM = new MatchDetailModel();
+            mDM.matchDetail = currMatch;
+            mDM.teams = allTeams;
+            httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
+            return View(mDM);
         }
         public IActionResult Privacy()
         {
@@ -334,6 +386,26 @@ namespace Project01.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+    }
+
+    public class MatchComparer : IEqualityComparer<Match>
+    {
+        public bool Equals([AllowNull] Match x, [AllowNull] Match y)
+        {
+            if(x.id == y.id)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public int GetHashCode([DisallowNull] Match obj)
+        {
+            return obj.id.GetHashCode();
         }
     }
 }

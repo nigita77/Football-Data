@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 
 namespace Project01.Models
 {
+
     public class Team
     {
         public int id { get; set; }
         public Area area { get; set; }
+        public List<Competition> activeCompetitions { get; set; }
+
         public string name { get; set; }
         public string shortName { get; set; }
         public string tla { get; set; }
@@ -20,6 +23,7 @@ namespace Project01.Models
         public string founded { get; set; }
         public string clubColors { get; set; }
         public string venue { get; set; }
+        public List<Player> squad { get; set; }
         public DateTime lastUpdated { get; set; }
     }
     public class TeamsModel

@@ -5,13 +5,13 @@
     ViewData["plCount"] = 0;
     ViewData["pdCount"] = 0;
 }
-<div class="container bg-light">
+<div class="container">
     <div class="d-flex justify-content-around">
         <a class="btn btn-warning btn-outline-dark" asp-controller="Home" asp-action="Index" asp-route-id="@ViewData["prevDate"]"> Prev day</a>
         <button id="date-form-button" class="btn btn-outline-dark" onclick="changeDisplay()">@ViewData["date"]</button>
         <form id="date-form" class="form-inline" hidden asp-controller="Home" asp-action="Index">
             <div class="form-group">
-                <input class="form-control" type="date" name="dateto"/>
+                <input class="form-control" type="date" name="dateto" />
                 <input class="ml-1 form-control" type="submit" value="Go" />
             </div>
         </form>
@@ -32,8 +32,8 @@
     </div>
 
     <div class="my-3">
-        <div class="card border-info">
-            <div class="card-header bg-primary text-white">
+        <div class="card border rounded shadow">
+            <div class="card-header bg-dark text-white">
                 Champions League
             </div>
             <div class="card-body">
@@ -42,43 +42,64 @@
                     if (fixture.competition == "CL")
                     {
                         ViewData["clCount"] = 1;
-                        <div class="row my-3">
+                        <div class="row my-3 p-3 rounded border-bottom w-75 mx-auto">
                             <div class="col-1"></div>
                             <div class="col-4 text-center">
-                                <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
-                                <br />
-                                <span>@fixture.homeShort</span>
+                                <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@fixture.homeTeam.id">
+                                    <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
+                                    <br />
+                                    <span class="text-dark">@fixture.homeShort</span>
+                                </a>
                             </div>
+                            
                             <div class="col-2 text-center">
-                                @if (fixture.status.ToUpper() == "SCHEDULED")
-                                {
-                                    <span>@fixture.localTime.ToString("MM/dd")</span>
-                                    <br />
-                                    <span>Vs</span>
-                                    <br />
-                                    <span>@fixture.localTime.ToString("HH:mm tt")</span>
-                                }
+                                <a class="text-dark" asp-controller="Home" asp-action="MatchDetail" asp-route-matchId="@fixture.id">
+                                    @if (fixture.status.ToUpper() == "SCHEDULED")
+                                    {
+                                        <span>@fixture.localTime.ToString("MM/dd")</span>
+                                        <br />
+                                        <span>Vs</span>
+                                        <br />
+                                        <span>@fixture.localTime.ToString("HH:mm tt")</span>
+                                    }
+                                    else if (fixture.status.ToUpper() == "FINISHED")
+                                    {
+                                        <span>FINISHED</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                        <br />
+                                        <span>Full Time</span>
+                                    }
 
-                                else if (fixture.status.ToUpper() == "FINISHED")
-                                {
-                                    <span>FINISHED</span>
-                                    <br />
-                                    <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
-                                    <br />
-                                    <span>Full Time</span>
-                                }
+                                    else if (fixture.status.ToUpper() == "IN_PLAY")
+                                    {
+                                        <span>Live</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                        <br />
+                                    }
 
-                                else
-                                {
-                                    <br />
-                                    <span>@fixture.status</span>
-                                    <br />
-                                }
+                                    else if (fixture.status.ToUpper() == "PAUSED")
+                                    {
+                                        <span>Half Time</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                    }
+                                    else
+                                    {
+                                        <br />
+                                        <span>@fixture.status</span>
+                                        <br />
+                                    }
+                                </a>
                             </div>
+                            
                             <div class="col-4 text-center">
-                                <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
-                                <br />
-                                <span>@fixture.awayShort</span>
+                                <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@fixture.awayTeam.id">
+                                    <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
+                                    <br />
+                                    <span class="text-dark">@fixture.awayShort</span>
+                                </a>
                             </div>
                             <div class="col-1"></div>
                         </div>
@@ -94,8 +115,8 @@
     </div>
 
     <div id="PL card" class="my-3">
-        <div class="card border-info">
-            <div class="card-header bg-primary text-white">
+        <div class="card border rounded shadow">
+            <div class="card-header bg-dark text-white">
                 Premier League
             </div>
             <div class="card-body">
@@ -104,42 +125,65 @@
                     @if (fixture.competition == "PL")
                     {
                         ViewData["plCount"] = 1;
-                        <div class="row my-3">
+                        <div class="row my-3 p-3 rounded border-bottom w-75 mx-auto">
                             <div class="col-1"></div>
                             <div class="col-4 text-center">
-                                <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
-                                <br />
-                                <span>@fixture.homeShort</span>
+                                <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@fixture.homeTeam.id">
+                                    <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
+                                    <br />
+                                    <span class="text-dark">@fixture.homeShort</span>
+                                </a>
                             </div>
+                            
                             <div class="col-2 text-center">
-                                @if (fixture.status.ToUpper() == "SCHEDULED")
-                                {
-                                    <span>@fixture.localTime.ToString("MM/dd")</span>
-                                    <br />
-                                    <span>Vs</span>
-                                    <br />
-                                    <span>@fixture.localTime.ToString("HH:mm tt")</span>
-                                }
-                                else if (fixture.status.ToUpper() == "FINISHED")
-                                {
-                                    <span>FINISHED</span>
-                                    <br />
-                                    <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
-                                    <br />
-                                    <span>Full Time</span>
-                                }
+                                <a class="text-dark" asp-controller="Home" asp-action="MatchDetail" asp-route-matchId="@fixture.id">
+                                    @if (fixture.status.ToUpper() == "SCHEDULED")
+                                    {
+                                        <span>@fixture.localTime.ToString("MM/dd")</span>
+                                        <br />
+                                        <span>Vs</span>
+                                        <br />
+                                        <span>@fixture.localTime.ToString("HH:mm tt")</span>
+                                    }
+                                    else if (fixture.status.ToUpper() == "FINISHED")
+                                    {
+                                        <span>FINISHED</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                        <br />
+                                        <span>Full Time</span>
+                                    }
 
-                                else
-                                {
-                                    <br />
-                                    <span>@fixture.status</span>
-                                    <br />
-                                }
+                                    else if (fixture.status.ToUpper() == "IN_PLAY")
+                                    {
+                                        <span>Live</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                        <br />
+                                    }
+
+                                    else if (fixture.status.ToUpper() == "PAUSED")
+                                    {
+                                        <span>Half Time</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                    }
+
+                                    else
+                                    {
+                                        <br />
+                                        <span>@fixture.status</span>
+                                        <br />
+                                    }
+                                </a>
                             </div>
+                            
                             <div class="col-4 text-center">
-                                <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
-                                <br />
-                                <span>@fixture.awayShort</span>
+                                <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@fixture.awayTeam.id">
+                                    <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
+                                    <br />
+                                    <span class="text-dark">@fixture.awayShort</span>
+                                </a>
                             </div>
                             <div class="col-1"></div>
                         </div>
@@ -154,8 +198,8 @@
         </div>
     </div>
     <div class="my-3">
-        <div class="card border-info">
-            <div class="card-header bg-primary text-white">
+        <div class="card border rounded shadow">
+            <div class="card-header bg-dark text-white">
                 La Liga
             </div>
             <div class="card-body">
@@ -164,42 +208,64 @@
                     @if (fixture.competition == "PD")
                     {
                         ViewData["pdCount"] = 1;
-                        <div class="row my-3">
+                        <div class="row my-3 p-3 rounded border-bottom w-75 mx-auto">
                             <div class="col-1"></div>
                             <div class="col-4 text-center">
-                                <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
-                                <br />
-                                <span>@fixture.homeShort</span>
+                                <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@fixture.homeTeam.id">
+                                    <img style="height:50px; width:auto;" alt=@fixture.homevShort src=@fixture.homeEmblem />
+                                    <br />
+                                    <span class="text-dark">@fixture.homeShort</span>
+                                </a>
                             </div>
+                            
                             <div class="col-2 text-center">
-                                @if (fixture.status.ToUpper() == "SCHEDULED")
-                                {
-                                    <span>@fixture.localTime.ToString("MM/dd")</span>
-                                    <br />
-                                    <span>Vs</span>
-                                    <br />
-                                    <span>@fixture.localTime.ToString("HH:mm tt")</span>
-                                }
-                                else if (fixture.status.ToUpper() == "FINISHED")
-                                {
-                                    <span>FINISHED</span>
-                                    <br />
-                                    <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
-                                    <br />
-                                    <span>Full Time</span>
-                                }
+                                <a class="text-dark" asp-controller="Home" asp-action="MatchDetail" asp-route-matchId="@fixture.id">
+                                    @if (fixture.status.ToUpper() == "SCHEDULED")
+                                    {
+                                        <span>@fixture.localTime.ToString("MM/dd")</span>
+                                        <br />
+                                        <span>Vs</span>
+                                        <br />
+                                        <span>@fixture.localTime.ToString("HH:mm tt")</span>
+                                    }
+                                    else if (fixture.status.ToUpper() == "FINISHED")
+                                    {
+                                        <span>FINISHED</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                        <br />
+                                        <span>Full Time</span>
+                                    }
 
-                                else
-                                {
-                                    <br />
-                                    <span>@fixture.status</span>
-                                    <br />
-                                }
+                                    else if (fixture.status.ToUpper() == "IN_PLAY")
+                                    {
+                                        <span>Live</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                        <br />
+                                    }
+
+                                    else if (fixture.status.ToUpper() == "PAUSED")
+                                    {
+                                        <span>Half Time</span>
+                                        <br />
+                                        <span>@fixture.score.fullTime.homeTeam - @fixture.score.fullTime.awayTeam</span>
+                                    }
+                                    else
+                                    {
+                                        <br />
+                                        <span>@fixture.status</span>
+                                        <br />
+                                    }
+                                </a>
                             </div>
+                            
                             <div class="col-4 text-center">
-                                <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
-                                <br />
-                                <span>@fixture.awayShort</span>
+                                <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@fixture.awayTeam.id">
+                                    <img style="height:50px; width:auto;" alt=@fixture.awayvShort src=@fixture.awayEmblem />
+                                    <br />
+                                    <span class="text-dark">@fixture.awayShort</span>
+                                </a>
                             </div>
                             <div class="col-1"></div>
                         </div>

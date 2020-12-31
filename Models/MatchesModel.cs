@@ -2,7 +2,17 @@
 using System.Collections.Generic;
 
 namespace Project01.Models
-{   
+{
+    public class SquadMember
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string position { get; set; }
+        public DateTime dateOfBirth { get; set; }
+        public string countryOfBirth { get; set; }
+        public string nationality { get; set; }
+        public string role { get; set; }
+    }
     public class Area
     {
         public string name { get; set; }
@@ -66,11 +76,19 @@ namespace Project01.Models
     {
         public int id { get; set; }
         public string name { get; set; }
+        public SquadMember coach { get; set; }
+        public Player captain { get; set; }
+        public List<Player> lineup { get; set; }
+        public List<Player> bench { get; set; }
     }
     public class AwayTeam
     {
         public int id { get; set; }
         public string name { get; set; }
+        public SquadMember coach { get; set; }
+        public Player captain { get; set; }
+        public List<Player> lineup { get; set; }
+        public List<Player> bench { get; set; }
     }
     public class Referee
     {
@@ -79,6 +97,41 @@ namespace Project01.Models
         public string role { get; set; }
         public string nationality { get; set; }
     }
+
+    public class Goal
+    {
+        public int minute { get; set; }
+        public string extraTime { get; set; }
+        public string type { get; set; }
+        public Team team { get; set; }
+        public Player scorer { get; set; }
+        public Player assist { get; set; }
+    }
+
+    public class Booking
+    {
+        public int minute { get; set; }
+        public Team team { get; set; }
+        public Player player { get; set; }
+        public string card { get; set; }
+    }
+
+    public class Substitution
+    {
+        public int minute { get; set; }
+        public Team team { get; set; }
+        public Player playerOut { get; set; }
+        public Player playerIn { get; set; }
+    }
+
+    public class HeadtoHead
+    {
+        public int numberOfMatches { get; set; }
+        public int totalGoals { get; set; }
+        public Dictionary<string, string> homeTeam { get; set; }
+        public Dictionary<string, string> awayTeam { get; set; }
+    }
+
     public class Match
     {
         public int id { get; set; }
@@ -93,12 +146,21 @@ namespace Project01.Models
         public Score score { get; set; }
         public HomeTeam homeTeam { get; set; }
         public AwayTeam awayTeam { get; set; }
+        public List<Goal> goals { get; set; }
+        public List<Booking> bookings { get; set; }
+        public List<Substitution> substituitions { get; set; }
         public List<Referee> referees { get; set; }
+    }
+
+    public class MatchDetail
+    {
+        public HeadtoHead head2head { get; set; }
+        public Match match { get; set; }
     }
     public class MatchesModel
     {
         public int count { get; set; }
-        public Dictionary<string, string> filters { get; set; }
+        public Dictionary<Object,Object> filters { get; set; }
         public Competition competition { get; set; }
         public List<Match> matches { get; set; }
     }

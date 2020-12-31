@@ -11,12 +11,10 @@ namespace Project01.Models
         {
             searchMatches = new List<Match>();
             searchTeams = new List<Team>();
-            searchCompetition = new List<Competition>();
             allTeams = new List<Team>();
         }
         public List<Match> searchMatches { get; set; }
         public List<Team> searchTeams { get; set; }
-        public List<Competition> searchCompetition { get; set; }
         public List<Team> allTeams { get; set; }
     }
 }
