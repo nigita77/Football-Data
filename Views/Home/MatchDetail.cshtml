@@ -1,11 +1,13 @@
 ﻿@model MatchDetailModel
 <h1>Match Detail</h1>
-
+@{
+    ViewData["Title"] = "Match";
+}
 <div>
     @{
         Team currentHomeTeam = Model.teams.Where(x => x.id == Model.matchDetail.match.homeTeam.id).FirstOrDefault();
         Team currentAwayTeam = Model.teams.Where(x => x.id == Model.matchDetail.match.awayTeam.id).FirstOrDefault();
-     }
+    }
     <div class="row no-gutters my-3 p-3 rounded border-bottom">
         <div class="col-1"></div>
         <div class="col-4 text-center">
@@ -17,47 +19,178 @@
         </div>
 
         <div class="col-2 text-center">
-                @if (Model.matchDetail.match.status.ToUpper() == "SCHEDULED")
+            @if (Model.matchDetail.match.status.ToUpper() == "SCHEDULED")
+            {
+                <span>@Model.matchDetail.match.utcDate.ToLocalTime().ToString("MM/dd")</span>
+                <br />
+                <span>Vs</span>
+                <br />
+                <span>@Model.matchDetail.match.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+            }
+
+            else if (Model.matchDetail.match.status.ToUpper() == "FINISHED")
+            {
+                <span>FINISHED</span>
+                <br />
+                <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+                <br />
+                <span>Full Time</span>
+
+            }
+
+            else if (Model.matchDetail.match.status.ToUpper() == "IN_PLAY")
+            {
+                <span>Live</span>
+                <br />
+                <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+                <br />
+            }
+
+            else if (Model.matchDetail.match.status.ToUpper() == "PAUSED")
+            {
+                <span>Half Time</span>
+                <br />
+                <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+            }
+
+
+            else
+            {
+                <br />
+                <span>@Model.matchDetail.match.status</span>
+                <br />
+            }
+        </div>
+        <div class="col-4 text-center">
+            <a asp-controller="Home" asp-action="TeamView" asp-route-teamId="@currentAwayTeam.id">
+                <img style="height:50px; width:auto;" alt=@currentAwayTeam.tla src=@currentAwayTeam.crestUrl />
+                <br />
+                <span class="text-dark">@currentAwayTeam.shortName</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<ul class="nav nav-pills my-1 justify-content-center" id="pills-tab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="pills-matchDetail-tab" data-toggle="pill" href="#pills-matchDetail" role="tab" aria-controls="pills-matchDetail" aria-selected="true">Matches</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="pills-lineUp-tab" data-toggle="pill" href="#pills-lineUp" role="tab" aria-controls="pills-lineUp" aria-selected="false">Lineup</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="pills-head2Head-tab" data-toggle="pill" href="#pills-head2Head" role="tab" aria-controls="pills-head2Head" aria-selected="false">Head to Head</a>
+    </li>
+</ul>
+
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active border" id="pills-matchDetail" role="tabpanel" aria-labelledby="pills-matchDetail-tab">
+        <div class="row no-gutters">
+            <div class="col-6">
+                <div class="text-center">@currentHomeTeam.shortName</div>
+                @if (Model.matchDetail.match.goals != null)
                 {
-                    <span>@Model.matchDetail.match.utcDate.ToLocalTime().ToString("MM/dd")</span>
-                    <br />
-                    <span>Vs</span>
-                    <br />
-                    <span>@Model.matchDetail.match.utcDate.ToLocalTime().ToString("HH:mm tt")</span>
+                    @foreach (var goal in Model.matchDetail.match.goals)
+                    {
+                        if (goal.team.id == currentHomeTeam.id)
+                        {
+                            <span>@goal.minute @goal.scorer.name</span>
+                        }
+                    }
                 }
-
-                else if (Model.matchDetail.match.status.ToUpper() == "FINISHED")
+                else
                 {
-                    <span>FINISHED</span>
-                    <br />
-                    <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
-                    <br />
-                    <span>Full Time</span>
-
+                    <div class="text-center">Data not Available</div>
                 }
-
-                else if (Model.matchDetail.match.status.ToUpper() == "IN_PLAY")
+            </div>
+            <div class="col-6">
+                <div class="text-center">@currentAwayTeam.shortName</div>
+                @if (Model.matchDetail.match.goals != null)
                 {
-                    <span>Live</span>
-                    <br />
-                    <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
-                    <br />
+                    @foreach (var goal in Model.matchDetail.match.goals)
+                    {
+                        if (goal.team.id == currentAwayTeam.id)
+                        {
+                            <span>@goal.minute @goal.scorer.name</span>
+                        }
+                    }
                 }
-
-                else if (Model.matchDetail.match.status.ToUpper() == "PAUSED")
+                else
                 {
-                    <span>Half Time</span>
-                    <br />
-                    <span>@Model.matchDetail.match.score.fullTime.homeTeam - @Model.matchDetail.match.score.fullTime.awayTeam</span>
+                    <div class="text-center">Data not Available</div>
                 }
+            </div>
+        </div>
+    </div>
 
+    <div class="tab-pane fade show border" id="pills-lineUp" role="tabpanel" aria-labelledby="pills-lineUp-tab">
+        <div class="row no-gutters">
+            <div class="col-6">
+                <div class="text-center">@currentHomeTeam.shortName</div>
+                @if (Model.matchDetail.match.homeTeam.lineup != null)
+                {
+                    @foreach (var memb in Model.matchDetail.match.homeTeam.lineup)
+                    {
+                        <div class="row">
+                            <div class="col">
+                                @memb.name
+                            </div>
+                            <div class="col">
+                                @memb.position
+                            </div>
+                            <div class="col">
+                                @memb.shirtNumber
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center">Data not Available</div>
+                }
+            </div>
+            <div class="col-6">
+                <div class="text-center">@currentAwayTeam.shortName</div>
+                @if (Model.matchDetail.match.awayTeam.lineup != null)
+                {
+                    @foreach (var memb in Model.matchDetail.match.awayTeam.lineup)
+                    {
+                        <div class="row">
+                            <div class="col">
+                                @memb.name
+                            </div>
+                            <div class="col">
+                                @memb.position
+                            </div>
+                            <div class="col">
+                                @memb.shirtNumber
+                            </div>
+                        </div>
+                    }
+                }
 
                 else
                 {
-                    <br />
-                    <span>@Model.matchDetail.match.status</span>
-                    <br />
+                    <div class="text-center">Data not Available</div>
                 }
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade show border" id="pills-head2Head" role="tabpanel" aria-labelledby="pills-head2Head-tab">
+        <div class="row">
+            <div class="col-6 text-center">
+                <div>@currentHomeTeam.shortName</div>
+                <span> Wins: @Model.matchDetail.head2head.homeTeam["wins"] </span><br />
+                <span> Draw: @Model.matchDetail.head2head.homeTeam["draws"]</span><br />
+                <span> Loss: @Model.matchDetail.head2head.homeTeam["losses"]</span><br />
+            </div>
+            <div class="col-6 text-center">
+                <div>@currentAwayTeam.shortName</div>
+                <span> Wins: @Model.matchDetail.head2head.awayTeam["wins"] </span><br />
+                <span> Draw: @Model.matchDetail.head2head.awayTeam["draws"]</span><br />
+                <span> Loss: @Model.matchDetail.head2head.awayTeam["losses"]</span><br />
+            </div>
         </div>
     </div>
 </div>

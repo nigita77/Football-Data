@@ -14,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Project01.Controllers
 {
+
     public class HomeController : Controller
     {
         private const string Value1 = "5f0f87aa7a314f9db4722f38c156d3d3";
@@ -377,7 +378,7 @@ namespace Project01.Controllers
             httpClient.DefaultRequestHeaders.Remove("X-Auth-Token");
             return View(mDM);
         }
-        public IActionResult Privacy()
+        public IActionResult About()
         {
             return View();
         }

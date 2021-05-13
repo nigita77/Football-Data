@@ -34,7 +34,7 @@ namespace Project01.Models
         public DateTime startDate { get; set; }
         public DateTime endDate { get; set; }
         public int currentMatchday { get; set; }
-        public string winner { get; set; }
+        public Team winner { get; set; }
     }
     public class Odds
     {
